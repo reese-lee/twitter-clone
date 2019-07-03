@@ -138,3 +138,216 @@ if (module.hot) {
   </body>
 </html>
 ```
+
+* to install linter
+```
+$ npm install eslint@4.13.1 -g
+$ npm install eslint@4.13.1 --save-dev
+```
+
+* initialize linter at the top level of your directory
+```
+$ eslint --init
+```
+
+* This will prompt a series of questions; select "Answer questions about your style" and select the following answers:
+```
+? Are you using ECMAScript 6 features? Yes
+? Are you using ES6 modules? Yes
+? Where will your code run? Browser
+? Do you use CommonJS? No
+? Do you use JSX? Yes
+? Do you use React? Yes
+? What style of indentation do you use? Spaces  
+? What quotes do you use for strings? Single
+? What line endings do you use? Unix
+? Do you require semicolons? Yes
+? What format do you want your config file to be in? JSON
+```
+
+* Run ESLint with the following command
+```
+$ eslint src/** src/**/**
+```
+
+* Manually install React plugins for ESLinter
+```
+$ npm install eslint-plugin-react -g
+$ npm install eslint-plugin-react --save-dev
+```
+
+* In your index.jsx file, wrap the final conditional with the following:
+```
+/*eslint-disable */
+if (module.hot) {
+  module.hot.accept('./components/App', () => {
+    render(App);
+  });
+}
+/*eslint-enable */
+```
+
+* Install eslint-loader, a special Webpack loader to work with ESLint
+```
+$ npm install eslint-loader --save-dev
+```
+
+* Use the following to fix indent errors automatically:
+```
+$ npm run lint-fix
+```
+
+* Copy and paste the following to your .eslintr.json file:
+```
+{
+    "env": {
+        "browser": true,
+        "es6": true
+    },
+    "extends": "eslint:recommended",
+    "parserOptions": {
+        "ecmaFeatures": {
+            "experimentalObjectRestSpread": true,
+            "jsx": true
+        },
+        "sourceType": "module"
+    },
+    "plugins": [
+        "react"
+    ],
+    "rules": {
+        "react/jsx-key": 2,
+        "react/jsx-uses-vars": 2,
+        "react/jsx-uses-react": 2,
+        "react/jsx-no-duplicate-props": 2,
+        "react/jsx-no-undef": 2,
+        "react/no-multi-comp": 2,
+        "react/jsx-indent-props": [
+            "error",
+            2
+          ],
+        "react/jsx-pascal-case": 2,
+        "react/prop-types": 2,
+        "react/jsx-indent": [
+            "error",
+            2
+        ],
+        "indent": [
+            "error",
+            2
+        ],
+        "linebreak-style": [
+            "error",
+            "unix"
+        ],
+        "quotes": [
+            "error",
+            "single"
+        ],
+        "semi": [
+            "error",
+            "always"
+        ],
+
+        "linebreak-style": [
+            "error",
+            "unix"
+        ],
+        "quotes": [
+            "error",
+            "single"
+        ],
+        "semi": [
+            "error",
+            "always"
+        ]
+    }
+}
+```
+
+* And the following to your webpack.config.js
+```
+const webpack = require('webpack');
+const { resolve } = require('path');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+
+module.exports = {
+
+  entry: [
+    'react-hot-loader/patch',
+    'webpack-dev-server/client?http://localhost:8080',
+    'webpack/hot/only-dev-server',
+    resolve(__dirname, "src", "index.jsx")
+  ],
+
+  output: {
+    filename: 'app.bundle.js',
+    path: resolve(__dirname, 'build'),
+    publicPath: '/'
+  },
+
+  resolve: {
+    extensions: [ '.js', '.jsx' ]
+  },
+
+  devtool: '#source-map',
+
+  devServer: {
+    hot: true,
+    contentBase: resolve(__dirname, 'build'),
+    publicPath: '/'
+  },
+
+ module: {
+      rules: [
+      {
+        test: /\.jsx?$/,
+        enforce: "pre",
+        loader: "eslint-loader",
+        exclude: /node_modules/,
+        options: {
+          emitWarning: true,
+          configFile: "./.eslintrc.json"
+        }
+      },
+      {
+        test: /\.jsx?$/,
+        loader: "babel-loader",
+        exclude: /node_modules/,
+        options: {
+          presets: [
+            ["es2015", {"modules": false}],
+            "react",
+          ],
+          plugins: [
+            "react-hot-loader/babel",
+            "styled-jsx/babel"
+          ]
+        }
+      },
+      {
+        test: /\.(png|jpe?g|gif)$/,
+        use: [
+          {
+            loader: 'file-loader',
+            options: {},
+          },
+        ],
+      }
+    ]
+
+  },
+
+  plugins: [
+    new webpack.HotModuleReplacementPlugin(),
+    new webpack.NamedModulesPlugin(),
+    new HtmlWebpackPlugin({
+      template:'template.ejs',
+      appMountId: 'react-app-root',
+      title: 'Lee & Bateman Markets',
+      filename: resolve(__dirname, "build", "index.html"),
+    }),
+  ]
+};
+
+```
